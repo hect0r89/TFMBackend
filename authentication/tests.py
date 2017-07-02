@@ -30,7 +30,7 @@ class LoginTestsAuthentication(TestCase):
 
     def test_login_user_incorrect_pass_ko(self):
         """
-        User with incorrect password tries to login
+        User with incorrect password tries to login 
         """
         response = self.client.post(URL_LOGIN, data={'username': 'user', 'password': 'incorrectpass'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
