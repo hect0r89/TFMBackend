@@ -1,5 +1,5 @@
 from django.test import TestCase
 
 
-class TestsBets(TestCase):
+class TestsAccounts(TestCase):
     pass
