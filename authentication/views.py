@@ -43,7 +43,7 @@ class AuthenticationViewSet(GenericViewSet):
         return Response({'token': token.key})
 
     @staticmethod
-    def perform_login(request, trader):
-        token, created = Token.objects.get_or_create(user=trader)
-        django_login(request, trader)
+    def perform_login(request, user):
+        token, created = Token.objects.get_or_create(user=user)
+        django_login(request, user)
         return token
