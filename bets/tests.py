@@ -12,13 +12,20 @@ BET_URL = '/api/1.0/bets/'
 class TestsBets(TestCase):
     def setUp(self):
         self.client = APIClient()
+        self.client_2 = APIClient()
         self.username = 'user'
+        self.username_2 = 'user_2'
         self.password = '1234'
         self.user = User.objects.create_superuser(username=self.username,
                                                   password=self.password,
                                                   email='user@mail.com')
-        self.token, self.created = Token.objects.get_or_create(user=self.user)
-        self.client.credentials(HTTP_AUTHORIZATION='Token {}'.format(self.token))
+        self.user_2 = User.objects.create_superuser(username=self.username_2,
+                                                  password=self.password,
+                                                  email='user2@mail.com')
+        self.token_user, self.created = Token.objects.get_or_create(user=self.user)
+        self.token_user_2, self.created = Token.objects.get_or_create(user=self.user_2)
+        self.client.credentials(HTTP_AUTHORIZATION='Token {}'.format(self.token_user))
+        self.client_2.credentials(HTTP_AUTHORIZATION='Token {}'.format(self.token_user_2))
         self.account = Account.objects.create(bank=1000, bookie='bet365')
         self.sport = "football"
         self.type = "HA"
@@ -28,8 +35,14 @@ class TestsBets(TestCase):
         self.odds = 1.85
         self.status = 'P'
         self.new_status = 'W'
-        self.bet = Bet.objects.create(account=self.account, user=self.user)
+        self.bet_user = Bet.objects.create(account=self.account, user=self.user)
+        self.bet_user_w = Bet.objects.create(account=self.account, user=self.user, status=self.new_status)
+        self.bet_user_2 = Bet.objects.create(account=self.account, user=self.user_2)
 
+
+    """
+    Creations tests
+    """
     def test_create_bet_ok(self):
         response = self.client.post(BET_URL, data={'sport': self.sport,
                                                    'type': self.type,
@@ -78,27 +91,68 @@ class TestsBets(TestCase):
                                                    })
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+
+    """
+    Update tests
+    """
     def test_update_bet_ok(self):
-        response = self.client.patch(BET_URL+ str(self.bet.pk) + '/', data={
+        response = self.client.patch(BET_URL + str(self.bet_user.pk) + '/', data={
             'status': self.new_status,
         })
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEquals(response.data.get('status'), self.new_status)
 
+    def test_update_bet_not_owner_ko(self):
+        response = self.client.patch(BET_URL + str(self.bet_user_2.pk) + '/', data={
+            'status': self.new_status,
+        })
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     def test_update_user_not_authenticated_bet_ko(self):
         self.client.logout()
-        response = self.client.patch(BET_URL+ str(self.bet.pk) + '/', data={
+        response = self.client.patch(BET_URL + str(self.bet_user.pk) + '/', data={
             'status': self.new_status,
         })
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_update_bet_incorrect_status_ko(self):
-        response = self.client.patch(BET_URL+ str(self.bet.pk) + '/', data={
+        response = self.client.patch(BET_URL + str(self.bet_user.pk) + '/', data={
             'status': 'incorrect',
         })
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+
+    """
+    Delete tests
+    """
     def test_delete_bet_ok(self):
-        response = self.client.delete(BET_URL + str(self.bet.pk) + '/')
+        response = self.client.delete(BET_URL + str(self.bet_user.pk) + '/')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEquals(0, Bet.objects.filter(pk=self.bet.pk).count())
+        self.assertEquals(0, Bet.objects.filter(pk=self.bet_user.pk).count())
+
+    def test_delete_bet_not_owner_ko(self):
+        response = self.client_2.delete(BET_URL + str(self.bet_user.pk) + '/')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEquals(1, Bet.objects.filter(pk=self.bet_user.pk).count())
+
+
+    """
+    List and Retrieve tests
+    """
+    def test_list_bets_ok(self):
+        response = self.client.get(BET_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(response.data), Bet.objects.filter(user=self.user.pk).count())
+
+    def test_retrieve_bet_ok(self):
+        response = self.client.get(BET_URL + str(self.bet_user.pk)+'/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_retrieve_bet_not_owner_ko(self):
+        response = self.client_2.get(BET_URL + str(self.bet_user.pk)+'/')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_filter_wins_bets_ok(self):
+        response = self.client.get(BET_URL + '?status='+self.new_status)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(response.data), Bet.objects.filter(status=self.new_status).count())

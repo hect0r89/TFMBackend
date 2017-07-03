@@ -27,4 +27,5 @@ class Bet(models.Model):
     status = models.CharField('State', choices=STATUS_CHOICES, default=PENDING, blank=False, null=False, max_length=1)
     user = models.ForeignKey(User, blank=False, null=False)
     month = models.IntegerField("Mes", default=datetime.datetime.now().month)
+    tipster = models.CharField("Tipster", blank=True, null=True, max_length=100)
 
