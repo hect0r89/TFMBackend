@@ -26,3 +26,11 @@ class BetUserSerializer(serializers.ModelSerializer):
                 return value
             else:
                 raise serializers.ValidationError("Account belongs to other user")
+
+    def validate_amount(self, value):
+        if value:
+            if value > 0:
+                return value
+            else:
+                raise serializers.ValidationError("Amount must be greater than 0")
+

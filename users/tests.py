@@ -16,6 +16,7 @@ class TestsUsers(TestCase):
         self.client_2 = APIClient()
         self.username = 'user'
         self.username_2 = 'user_2'
+        self.new_username = 'new_username'
         self.password = '1234'
         self.user = User.objects.create_superuser(username=self.username,
                                                   password=self.password,
@@ -44,3 +45,12 @@ class TestsUsers(TestCase):
     def test_unsubscribe_user_ok(self):
         response = self.client.post(URL_USERS + str(self.user_2.pk) + URL_UNSUBSCRIBE)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_user_ok(self):
+        response = self.client.patch(URL_USERS + str(self.user.pk) + '/', data={'username': self.new_username})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get('username'), self.new_username)
+
+    def test_update_user_different_ko(self):
+        response = self.client.patch(URL_USERS + str(self.user_2.pk) + '/', data={'username': self.new_username})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

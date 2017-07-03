@@ -26,6 +26,6 @@ class Bet(models.Model):
     odds = models.FloatField('Odds', blank=False, null=False, default=1.85)
     status = models.CharField('State', choices=STATUS_CHOICES, default=PENDING, blank=False, null=False, max_length=1)
     user = models.ForeignKey(User, blank=False, null=False)
-    month = models.IntegerField("Mes", default=datetime.datetime.now().month)
+    month_year = models.CharField("Month-Year", default='{}-{}'.format(datetime.datetime.now().month, datetime.datetime.now().year), max_length=7)
     tipster = models.CharField("Tipster", blank=True, null=True, max_length=100)
 

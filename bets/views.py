@@ -17,16 +17,15 @@ class BetViewSet(GenericViewSet, ListModelMixin, CreateModelMixin, UpdateModelMi
         return Bet.objects.filter(user=self.request.user)
 
 
-class AllBetsViewSet(GenericViewSet, ListModelMixin,  RetrieveModelMixin):
+class AllBetsViewSet(GenericViewSet, ListModelMixin, RetrieveModelMixin):
     queryset = Bet.objects.all()
     serializer_class = BetSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filter_fields = ('user',)
 
 
-class SubscribedBetsViewSet(GenericViewSet, ListModelMixin,  RetrieveModelMixin):
+class SubscribedBetsViewSet(GenericViewSet, ListModelMixin, RetrieveModelMixin):
     serializer_class = BetSerializer
 
     def get_queryset(self):
         return Bet.objects.filter(user__in=self.request.user.subscribers.all())
-
