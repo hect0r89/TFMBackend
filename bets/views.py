@@ -1,4 +1,3 @@
-from rest_framework.decorators import list_route
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, UpdateModelMixin, RetrieveModelMixin, \
     DestroyModelMixin
 from rest_framework.viewsets import GenericViewSet
@@ -19,7 +18,15 @@ class BetViewSet(GenericViewSet, ListModelMixin, CreateModelMixin, UpdateModelMi
 
 
 class AllBetsViewSet(GenericViewSet, ListModelMixin,  RetrieveModelMixin):
+    queryset = Bet.objects.all()
+    serializer_class = BetSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_fields = ('user',)
+
+
+class SubscribedBetsViewSet(GenericViewSet, ListModelMixin,  RetrieveModelMixin):
     serializer_class = BetSerializer
 
     def get_queryset(self):
-        return Bet.objects.filter()
+        return Bet.objects.filter(user__in=self.request.user.subscribers.all())
+

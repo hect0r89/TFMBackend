@@ -7,6 +7,8 @@ from bets.models import Bet
 from users.models import User
 
 BET_URL = '/api/1.0/bets/'
+ALL_BET_URL = '/api/1.0/all_bets/'
+SUBSCRIBED_BET_URL = '/api/1.0/subscribed_bets/'
 
 
 class TestsBets(TestCase):
@@ -22,6 +24,7 @@ class TestsBets(TestCase):
         self.user_2 = User.objects.create_superuser(username=self.username_2,
                                                   password=self.password,
                                                   email='user2@mail.com')
+        self.user.subscribers.add(self.user_2)
         self.token_user, self.created = Token.objects.get_or_create(user=self.user)
         self.token_user_2, self.created = Token.objects.get_or_create(user=self.user_2)
         self.client.credentials(HTTP_AUTHORIZATION='Token {}'.format(self.token_user))
@@ -144,8 +147,26 @@ class TestsBets(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEquals(len(response.data), Bet.objects.filter(user=self.user.pk).count())
 
+    def test_list_user_bets_ok(self):
+        response = self.client.get(ALL_BET_URL + '?user='+str(self.user_2.pk))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(response.data), Bet.objects.filter(user=self.user_2.pk).count())
+
+    def test_list_subscribed_user_bets_ok(self):
+        response = self.client.get(SUBSCRIBED_BET_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEquals(len(response.data), Bet.objects.filter(user=self.user_2.pk).count())
+
     def test_retrieve_bet_ok(self):
         response = self.client.get(BET_URL + str(self.bet_user.pk)+'/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_retrieve_user_bet_ok(self):
+        response = self.client.get(ALL_BET_URL + str(self.bet_user_2.pk)+'/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_retrieve_subscribed_user_bet_ok(self):
+        response = self.client.get(SUBSCRIBED_BET_URL + str(self.bet_user_2.pk)+'/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_retrieve_bet_not_owner_ko(self):
