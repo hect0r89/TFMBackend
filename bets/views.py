@@ -4,12 +4,12 @@ from rest_framework.viewsets import GenericViewSet
 from django_filters import rest_framework as filters
 
 from bets.models import Bet
-from bets.serializers import BetSerializer
+from bets.serializers import BetSerializer, BetUserSerializer
 
 
 class BetViewSet(GenericViewSet, ListModelMixin, CreateModelMixin, UpdateModelMixin, RetrieveModelMixin,
                  DestroyModelMixin):
-    serializer_class = BetSerializer
+    serializer_class = BetUserSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filter_fields = ('status',)
 

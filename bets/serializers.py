@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from accounts.models import Account
 from bets.models import Bet
 
 
@@ -7,8 +8,21 @@ class BetSerializer(serializers.ModelSerializer):
     """
     Serializer for Bet model
     """
+    class Meta:
+        model = Bet
+        fields = '__all__'
+
+
+class BetUserSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(read_only=True, default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Bet
         fields = '__all__'
+
+    def validate_account(self, value):
+        if value:
+            if value.user.pk == self.context['request'].user.pk:
+                return value
+            else:
+                raise serializers.ValidationError("Account belongs to other user")

@@ -29,7 +29,7 @@ class TestsBets(TestCase):
         self.token_user_2, self.created = Token.objects.get_or_create(user=self.user_2)
         self.client.credentials(HTTP_AUTHORIZATION='Token {}'.format(self.token_user))
         self.client_2.credentials(HTTP_AUTHORIZATION='Token {}'.format(self.token_user_2))
-        self.account = Account.objects.create(bank=1000, bookie='bet365')
+        self.account = Account.objects.create(bank=1000, bookie='bet365', user=self.user)
         self.sport = "football"
         self.type = "HA"
         self.pick = 'Athletic HA +0.5'
@@ -78,6 +78,18 @@ class TestsBets(TestCase):
                                                    'amount': self.amount,
                                                    'odds': self.odds,
                                                    'status': 'INCORRECT',
+                                                   })
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_bet_account_other_user_ko(self):
+        response = self.client_2.post(BET_URL, data={'sport': self.sport,
+                                                   'type': self.type,
+                                                   'pick': self.pick,
+                                                   'account': self.account.pk,
+                                                   'stake': self.stake,
+                                                   'amount': self.amount,
+                                                   'odds': self.odds,
+                                                   'status': self.status,
                                                    })
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
