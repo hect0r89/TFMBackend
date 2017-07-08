@@ -17,7 +17,7 @@ class Bet(models.Model):
         (NULL, 'Null')
     )
 
-    sport = models.CharField('Sport', blank=True, null=True, max_length=50)
+    event = models.CharField('Event', blank=True, null=True, max_length=50)
     type = models.CharField('Type', blank=True, null=True, max_length=50)
     pick = models.CharField('Pick', blank=False, null=False, max_length=200, default="Default")
     account = models.ForeignKey(Account, blank=False, null=False)
@@ -28,4 +28,5 @@ class Bet(models.Model):
     user = models.ForeignKey(User, blank=False, null=False)
     month_year = models.CharField("Month-Year", default='{}-{}'.format(datetime.datetime.now().month, datetime.datetime.now().year), max_length=7)
     tipster = models.CharField("Tipster", blank=True, null=True, max_length=100)
+    created_at = models.DateTimeField("Created at", auto_now_add=True)
 

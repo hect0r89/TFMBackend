@@ -14,7 +14,7 @@ class BetViewSet(GenericViewSet, ListModelMixin, CreateModelMixin, UpdateModelMi
     filter_fields = ('status',)
 
     def get_queryset(self):
-        return Bet.objects.filter(user=self.request.user)
+        return Bet.objects.filter(user=self.request.user).order_by('-created_at')
 
 
 class AllBetsViewSet(GenericViewSet, ListModelMixin, RetrieveModelMixin):
@@ -28,4 +28,4 @@ class SubscribedBetsViewSet(GenericViewSet, ListModelMixin, RetrieveModelMixin):
     serializer_class = BetSerializer
 
     def get_queryset(self):
-        return Bet.objects.filter(user__in=self.request.user.subscribers.all())
+        return Bet.objects.filter(user__in=self.request.user.subscribers.all()).order_by('-created_at')

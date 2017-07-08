@@ -55,3 +55,15 @@ class UserViewSet(MultiSerializerGenericViewSet, ListModelMixin, UpdateModelMixi
             filter['tipster'] = request.query_params.get('tipster')
         data = UserStatsSerializer(User.objects.filter(pk=pk).first(), context=filter).data
         return Response({'data': data}, status=status.HTTP_200_OK)
+
+    @list_route(methods=['get'])
+    def my_stats(self, request):
+        filter = {}
+        if request.query_params.get('month_year'):
+            filter['month_year'] = request.query_params.get('month_year')
+        if request.query_params.get('account'):
+            filter['account'] = request.query_params.get('account')
+        if request.query_params.get('tipster'):
+            filter['tipster'] = request.query_params.get('tipster')
+        data = UserStatsSerializer(User.objects.filter(pk=request.user.pk).first(), context=filter).data
+        return Response(data, status=status.HTTP_200_OK)
