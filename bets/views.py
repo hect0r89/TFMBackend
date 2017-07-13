@@ -6,7 +6,6 @@ from django_filters import rest_framework as filters
 from bets.models import Bet
 from bets.serializers import BetSerializer, BetUserSerializer
 
-
 class BetViewSet(GenericViewSet, ListModelMixin, CreateModelMixin, UpdateModelMixin, RetrieveModelMixin,
                  DestroyModelMixin):
     serializer_class = BetUserSerializer

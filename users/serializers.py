@@ -1,3 +1,6 @@
+import datetime
+
+import math
 from rest_framework import serializers
 
 from bets.serializers import BetSerializer
@@ -38,6 +41,17 @@ class UserStatsSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
         filter_dict = self.context
         kwargs = {}
+
+        last_year = {0: 12, -1: 11, -2: 10, -3: 9, -4: 8}
+        current_month = datetime.datetime.now().month
+        ret['evolution'] = {}
+        for month in range(current_month, current_month - 5, -1):
+            if month > 0:
+                ret['evolution'][month] = self.calculate_yield(instance.bet_set.filter(month=month))
+            else:
+                ret['evolution'][last_year[month]] = self.calculate_yield(
+                    instance.bet_set.filter(month=last_year[month]))
+
         for filter_field in filter_dict:
             kwargs['{}'.format(filter_field)] = filter_dict[filter_field]
         bets = instance.bet_set.filter(**kwargs)
@@ -76,3 +90,22 @@ class UserStatsSerializer(serializers.ModelSerializer):
             ret['odds_mean'] = ret['odds_mean'] / ret['bets_number']
             ret['bets_mean'] = ret['money_staked'] / ret['bets_number']
         return ret
+
+    def calculate_yield(self, bets):
+        ret = {}
+        ret['money_staked'] = 0.0
+        ret['earnings'] = 0.0
+        ret['losses'] = 0.0
+        ret['benefit'] = 0
+        ret['yield'] = 0
+        if bets:
+            for bet in bets:
+                ret['money_staked'] = ret['money_staked'] + bet.amount
+                if bet.status == 'W':
+                    ret['earnings'] = ret['earnings'] + (bet.amount * bet.odds - bet.amount)
+                elif bet.status == 'L':
+                    ret['losses'] = ret['losses'] - bet.amount
+            ret['benefit'] = ret['earnings'] + ret['losses']
+            ret['yield'] = math.ceil((ret['benefit'] / ret['money_staked']) * 100*100)/100
+
+        return ret['yield']
