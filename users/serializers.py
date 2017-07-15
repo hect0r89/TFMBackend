@@ -29,6 +29,9 @@ class UserDetailSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         ret['bets'] = BetSerializer(instance.bet_set, many=True).data
+        ret['subscribed'] = False
+        if instance in self.context['request'].user.subscribers.all():
+            ret['subscribed'] = True
         return ret
 
 

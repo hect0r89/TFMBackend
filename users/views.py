@@ -54,7 +54,7 @@ class UserViewSet(MultiSerializerGenericViewSet, ListModelMixin, UpdateModelMixi
         if request.query_params.get('tipster'):
             filter['tipster'] = request.query_params.get('tipster')
         data = UserStatsSerializer(User.objects.filter(pk=pk).first(), context=filter).data
-        return Response({'data': data}, status=status.HTTP_200_OK)
+        return Response(data, status=status.HTTP_200_OK)
 
     @list_route(methods=['get'])
     def my_stats(self, request):

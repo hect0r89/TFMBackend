@@ -12,6 +12,11 @@ class BetSerializer(serializers.ModelSerializer):
         model = Bet
         fields = '__all__'
 
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['username'] = instance.user.username
+        return ret
+
 
 class BetUserSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(read_only=True, default=serializers.CurrentUserDefault())
