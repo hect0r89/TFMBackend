@@ -15,6 +15,7 @@ class BetSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         ret['username'] = instance.user.username
+        ret['color'] = instance.user.color
         return ret
 
 
