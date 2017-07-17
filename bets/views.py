@@ -17,10 +17,12 @@ class BetViewSet(GenericViewSet, ListModelMixin, CreateModelMixin, UpdateModelMi
 
 
 class AllBetsViewSet(GenericViewSet, ListModelMixin, RetrieveModelMixin):
-    queryset = Bet.objects.all()
     serializer_class = BetSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filter_fields = ('user',)
+
+    def get_queryset(self):
+        return Bet.objects.all().order_by('-created_at')
 
 
 class SubscribedBetsViewSet(GenericViewSet, ListModelMixin, RetrieveModelMixin):
